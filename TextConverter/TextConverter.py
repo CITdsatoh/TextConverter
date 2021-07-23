@@ -208,13 +208,7 @@ class TextConverter:
           if current_prereplace == lists[i][1]:
             return True 
        return False
-       
-       
-  def addExtension(self):
-      for i in range(0,len(self.writefiles)):
-        if self.writefiles.rfind(".") == -1:
-          extension=TextConverter.getExtension(self.readfiles[i])
-          self.writefiles=self.writefiles+extension
+
   
   @classmethod
   def getExtension(cls,file):
