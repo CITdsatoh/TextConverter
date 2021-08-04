@@ -82,9 +82,12 @@ class TextConverter:
     self.fieldlist[last]["to"].delete(0,tk.END)
 
   def rewrite(self,event):
-    if len(self.arrange()) ==0:
-     messagebox.showerror("エラー","変更するテキストが何も入力されていません")
-     return
+    candidate_list,error_flag=self.arrange()
+    if len(candidate_list) ==0:
+      messagebox.showerror("エラー","変更するテキストが何も入力されていません")
+      return
+    if error_flag:
+      messagebox.showerror("エラー","空文字列を通常の文字列に変更することはできません.その箇所は無視されます")
     self.readfiles=[]
     self.writefiles=[]
     ftype=[("","*.txt;*.csv;*.c;*.java;*.py;*.js;*.cpp;*.html;*.css;*,ini;*.rb;*.vbs")]
@@ -107,9 +110,12 @@ class TextConverter:
     self.writing(event)
 
   def newwrite(self,event):
-    if len(self.arrange()) ==0:
-     messagebox.showerror("エラー","変更するテキストが何も入力されていません")
-     return
+    candidate_list,error_flag=self.arrange()
+    if len(candidate_list) ==0:
+      messagebox.showerror("エラー","変更するテキストが何も入力されていません")
+      return
+    if error_flag:
+      messagebox.showerror("エラー","空文字列を通常の文字列に変更することはできません.その箇所は無視されます")
     self.readfiles=[]
     self.writefiles=[]
     ftype=[("","*.txt;*.csv;*.c;*.java;*.py;*.js;*.cpp;*.html;*.css;*,ini;*.rb;*.vbs")]
@@ -132,7 +138,7 @@ class TextConverter:
     self.writing(event)
 
   def writing(self,event):
-    rwlist=self.arrange()
+    rwlist,error_flag=self.arrange()
     if len(self.readfiles) == 0 and len(self.writefiles) == 0:
       messagebox.showerror("ファイルが未選択","ファイルの選択が行われていません。まずはファイルを選択してください")
       result=messagebox.askyesnocancel("ファイルを選択","これからファイルの選択を行いますが，上書きモードでよろしいですか?\nyes・・上書きモード,no・・別ファイル書き込み,cancel・・キャンセル")
@@ -148,6 +154,9 @@ class TextConverter:
     if len(rwlist) == 0:
        messagebox.showerror("エラー","変更するテキストが何も入力されていません")
        return
+    if error_flag:
+       messagebox.showerror("エラー","空文字列を通常の文字列に変更することはできません.その箇所は無視されます")
+       
     for i in range(0,len(self.readfiles)):
       with open(self.readfiles[i],encoding="UTF-8") as file:
        try:
@@ -191,16 +200,19 @@ class TextConverter:
 
   def arrange(self):
      rwlist=[]
+     error_flag=False
      for textfield in self.fieldlist:
        rwcombi=[]
        prereplace=textfield["from"].get()
        postreplace=textfield["to"].get()
-       if len(prereplace) != 0 or len(postreplace) != 0:
+       if len(prereplace) != 0:
          rwcombi.append(prereplace)
          rwcombi.append(postreplace)
          rwlist.append(rwcombi)
-      
-     return rwlist
+       elif len(postreplace) != 0:
+         error_flag=True
+       
+     return rwlist,error_flag
      
   def hasReplaced(self,current_prereplace,lists,finished):
      
@@ -208,7 +220,8 @@ class TextConverter:
           if current_prereplace == lists[i][1]:
             return True 
        return False
-
+       
+      
   
   @classmethod
   def getExtension(cls,file):
